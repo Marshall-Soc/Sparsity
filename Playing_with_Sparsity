@@ -1,0 +1,34 @@
+# Necessary packages
+library(NLP)
+library(tm)
+library(SnowballC)
+
+# Feeding in documents and creating the corpus.
+documents <- file.path("enter file path here")
+corpus <- Corpus(DirSource(documents))
+
+# Some pre-processing.
+toString <- content_transformer(function(x, from, to) gsub(from, to, x))
+corpus <- tm_map(corpus, stripWhitespace)
+corpus <- tm_map(corpus, content_transformer(tolower))
+corpus <- tm_map(corpus, toString, "term you want to change", 
+                 "term you want to change it to")
+corpus <- tm_map(corpus, removeNumbers)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus, removeWords, stopwords("english"))
+corpus <- tm_map(corpus, stemDocument)
+
+# Making the document-term matrix.
+dtm <- DocumentTermMatrix(corpus)
+
+# Removing terms with a sparse factor of .4 or higher.
+dtm2 <- removeSparseTerms(dtm, 0.4)
+  # I always create a new dtm when I play around with sparsity 
+    # settings, just to be safe.
+
+# Compare matrices. Note the differences in sparsity % and total number of terms.
+dtm
+dtm2
+dim(dtm)
+dim(dtm2)
+dtm.matrix <- as.matrix(dtm)
